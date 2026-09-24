@@ -24,7 +24,6 @@ function shuffle(list) {
 }
 
 function Home() {
-  
   // สุ่มครั้งเดียวตอน component เกิด แล้วจำไว้ใน state (กดเลื่อนแล้วลำดับไม่เปลี่ยน)
   // TODO ขั้นที่ 5: เปลี่ยนเป็น useState([]) แล้วใช้ useEffect เรียก getMovies() แล้ว setPicks(shuffle(list))
   const [picks, setPicks] = useState(() => shuffle(localMovies));
@@ -85,4 +84,3 @@ function Home() {
   );
 }
 
-export default Home;
