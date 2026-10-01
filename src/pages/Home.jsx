@@ -1,82 +1,53 @@
+import { useEffect, useState } from 'react';
+import { getMovies } from '../api/backend';
 import { Link } from 'react-router-dom';
 import FeaturedCarousel from '../components/FeaturedCarousel';
-import { useEffect, useState } from 'react';
-import { getMovies } from '../api/tmdb';
-
+// ลบ import data.js ทิ้ง (ถ้าเหลือไว้แต่ไม่ได้ใช้ Vercel จะ build ล้มเพราะ warning)
 const STEPS = [
-  { n: 1, file: 'src/api/tmdb.js', what: 'เขียนส่วน fetch ใน getJSON' },
-  { n: 2, file: 'src/api/tmdb.js', what: 'เขียน toMovie แปลง JSON ของ TMDB' },
-  { n: 3, file: 'src/pages/Movies.jsx', what: 'useEffect โหลดหนังจาก API (วันละครั้ง) แล้วกรองในเครื่อง' },
-  { n: 4, file: 'src/pages/MovieDetail.jsx', what: 'โหลดรายละเอียดตาม id' },
-  { n: 5, file: 'src/pages/Home.jsx', what: 'หนังแนะนำสุ่มจากข้อมูล API ชุดเดียวกัน' },
-  { n: 6, file: 'docs/api-wishlist.md', what: 'กรอกรายการ API ที่จะขอจากทีม Backend' },
+    { n: 1, file: 'src/api/tmdb.js', what: 'เขียนส่วน fetch ใน getJSON' },
+    { n: 2, file: 'src/api/tmdb.js', what: 'เขียน toMovie แปลง JSON ของ TMDB' },
+    { n: 3, file: 'src/pages/Movies.jsx', what: 'useEffect โหลดหนังจาก API (วันละครั้ง) แล้วกรองในเครื่อง' },
+    { n: 4, file: 'src/pages/MovieDetail.jsx', what: 'โหลดรายละเอียดตาม id' },
+    { n: 5, file: 'src/pages/Home.jsx', what: 'หนังแนะนำสุ่มจากข้อมูล API ชุดเดียวกัน' },
+    { n: 6, file: 'docs/api-wishlist.md', what: 'กรอกรายการ API ที่จะขอจากทีม Backend' },
 ];
-
-// สลับลำดับแบบสุ่มบนสำเนา ไม่แตะ array เดิม
 function shuffle(list) {
-  const copy = [...list];
-
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-
-  return copy;
+    const copy = [...list];
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
 }
-
 function Home() {
-  const [picks, setPicks] = useState([]);
+    const [picks, setPicks] = useState([]);   // เริ่มว่าง รอข้อมูลจาก API แล้วค่อยสุ่ม
 
-  useEffect(() => {
-    let ignore = false;
-
-    getMovies()
-      .then(list => {
-        if (!ignore) {
-          setPicks(shuffle(list));
-        }
-      })
-      .catch(() => {
-        if (!ignore) {
-          setPicks([]);
-        }
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  return (
+    // ใช้ getMovies() ตัวเดียวกับหน้า Movies ถ้าวันนี้เคยโหลดแล้วจะได้จาก localStorage ทันที
+    useEffect(() => {
+        let ignore = false;
+        getMovies()
+            .then(list => { if (!ignore) setPicks(shuffle(list)); })
+            .catch(() => { if (!ignore) setPicks([]); });   // พลาดก็แค่ไม่มีหนังแนะนำ หน้าแรกไม่ควรพัง
+        return () => { ignore = true; };
+    }, []
+    );
+    return (
     <div className="mx-auto max-w-5xl px-4 md:px-6">
-
       {/* Hero */}
       <section className="py-14 md:py-20">
-        <p className="text-sm font-medium text-emerald-600">
-          สัปดาห์นี้: Fetch / JSON / API
-        </p>
-
+        <p className="text-sm font-medium text-emerald-600">สัปดาห์นี้: Fetch / JSON / API</p>
         <h1 className="mt-2 max-w-2xl text-3xl font-semibold tracking-tight text-slate-900 md:text-5xl">
           หนังน่าดู รวมไว้ที่เดียว
         </h1>
-
         <p className="mt-4 max-w-xl text-slate-600">
-          MovieHub เชื่อมต่อกับ TMDB เพื่อแสดงข้อมูลหนังจาก API
-          และเตรียมต่อกับ Backend ของทีม
+          ตอนนี้ MovieHub ยังมีหนังแค่ 10 เรื่องจากไฟล์ data.js
+          วันนี้เราจะเชื่อมกับ TMDB ให้ได้หนังที่กำลังฉายจริง และเตรียมต่อกับ Backend ของทีม
         </p>
-
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            to="/movies"
-            className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
-          >
+          <Link to="/movies" className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600">
             ดูหนังทั้งหมด
           </Link>
-
-          <Link
-            to="/lab"
-            className="rounded-lg border border-emerald-200 bg-white px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
-          >
+          <Link to="/lab" className="rounded-lg border border-emerald-200 bg-white px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50">
             ทดลองยิง API
           </Link>
         </div>
@@ -86,54 +57,27 @@ function Home() {
       <section>
         <div className="mb-4 flex items-end justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">
-              หนังแนะนำ
-            </h2>
-
-            <p className="text-sm text-slate-500">
-              สุ่มลำดับใหม่ทุกครั้งที่เปิดหน้า แหล่งข้อมูล: TMDB API
-            </p>
+            <h2 className="text-xl font-semibold text-slate-900">หนังแนะนำ</h2>
+            <p className="text-sm text-slate-500">สุ่มลำดับใหม่ทุกครั้งที่เปิดหน้า แหล่งข้อมูล: data.js</p>
           </div>
-
-          <button
-            onClick={() => setPicks(shuffle(picks))}
-            className="text-sm text-emerald-600 hover:underline"
-          >
+          <button onClick={() => setPicks(shuffle(picks))} className="text-sm text-emerald-600 hover:underline">
             สุ่มใหม่
           </button>
         </div>
-
         <FeaturedCarousel movies={picks} />
       </section>
 
       {/* Roadmap */}
       <section className="mt-16">
-        <h2 className="text-xl font-semibold text-slate-900">
-          แผนที่ของโปรเจกต์นี้
-        </h2>
-
-        <p className="text-sm text-slate-500">
-          หน้าตาเสร็จแล้ว เหลือเติมส่วนที่คุยกับ API ทีละขั้น
-        </p>
-
+        <h2 className="text-xl font-semibold text-slate-900">แผนที่ของโปรเจกต์นี้</h2>
+        <p className="text-sm text-slate-500">หน้าตาเสร็จแล้ว เหลือเติมส่วนที่คุยกับ API ทีละขั้น</p>
         <ol className="mt-4 divide-y divide-emerald-100 rounded-xl border border-emerald-100 bg-white">
           {STEPS.map(s => (
-            <li
-              key={s.n}
-              className="flex items-center gap-4 px-4 py-3"
-            >
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-50 text-sm font-medium text-emerald-700">
-                {s.n}
-              </span>
-
+            <li key={s.n} className="flex items-center gap-4 px-4 py-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-50 text-sm font-medium text-emerald-700">{s.n}</span>
               <div className="min-w-0">
-                <p className="text-sm text-slate-900">
-                  {s.what}
-                </p>
-
-                <code className="text-xs text-slate-400">
-                  {s.file}
-                </code>
+                <p className="text-sm text-slate-900">{s.what}</p>
+                <code className="text-xs text-slate-400">{s.file}</code>
               </div>
             </li>
           ))}
@@ -141,6 +85,6 @@ function Home() {
       </section>
     </div>
   );
+    // ...ส่วน return เหมือนเดิมทุกบรรทัด
 }
-
 export default Home;

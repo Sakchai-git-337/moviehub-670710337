@@ -1,7 +1,7 @@
 // จำผลลัพธ์ไว้ในเครื่อง (localStorage) วันละครั้ง จะได้ไม่ยิง API ทุกครั้งที่เปิดหน้า
 // localStorage เก็บได้แค่ข้อความ จึงต้องแปลง object เป็น JSON ตอนเก็บ และแปลงกลับตอนอ่าน
 
-function today() {
+function today() {  
   return new Date().toISOString().slice(0, 10);   // เช่น '2026-09-24'
 }
 
